@@ -13,6 +13,10 @@ df = pd.read_csv('covid19_data.csv')
 df = df.set_index(df.date)
 country_options = df['Country_Region'].unique()
 
+total_confirmed = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Confirmed']
+total_deaths = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Deaths']
+total_recovered = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Recovered']
+
 #################Dash
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -21,7 +25,10 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 colors = {
     'background': '#333333',
-    'text': '#7FDBFF'
+    'text': '#7FDBFF',
+    'red': '#db1600',
+    'green': '#33eb00',
+    'white': '#ffffff'
 }
 
 app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': '100vh'}, children=[
@@ -48,6 +55,64 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 value='All countries')
     ]),
 
+    html.Div(style={'backgroundColor': colors['background'], 'width': '100%', 'margin': '20px', 'justify-content': 'center', 'display': 'flex'}, children=[
+        html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+            html.H4(
+                children='TOTAL CONFIRMED',
+                style={
+                    'textAlign': 'center',
+                    'color': colors['text']
+                }
+            ),
+
+            html.H1(
+                children=total_confirmed,
+                style={
+                    'textAlign': 'center',
+                    'color': colors['red']
+                }
+            )
+        ]),
+        
+
+        html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+            html.H4(
+                children='TOTAL DEATHS',
+                style={
+                    'textAlign': 'center',
+                    'color': colors['text']
+                }
+            ),
+
+            html.H1(
+                children=total_deaths,
+                style={
+                    'textAlign': 'center',
+                    'color': colors['white']
+                }
+            )
+        ]),
+        
+        html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+            html.H4(
+                children='TOTAL RECOVERED',
+                style={
+                    'textAlign': 'center',
+                    'color': colors['text']
+                }
+            ),
+
+            html.H1(
+                children=total_recovered,
+                style={
+                    'textAlign': 'center',
+                    'color': colors['green']
+                }
+            )
+        ]),
+        
+    ]),
+
     dcc.Graph(
         id='total-confirmed-graph'
     )
@@ -69,6 +134,7 @@ def update_graph(country):
     return {
         'data': [trace1, trace2, trace3],
         'layout': {
+                'title': "Total number of infected",
                 'paper_bgcolor': colors['background'],
                 'plot_bgcolor': colors['background'],
                 'font': {
