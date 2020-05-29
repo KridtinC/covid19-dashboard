@@ -23,11 +23,20 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 colors = {
-    'background': '#333333',
+    'background': '#111111',
     'text': '#7FDBFF',
     'red': '#db1600',
     'green': '#33eb00',
-    'white': '#ffffff'
+    'white': '#ffffff',
+    'black': '#333333'
+}
+
+border_style = {'backgroundColor': colors['black'],
+    'padding': '10px',
+    'margin': '10px', 
+    'display': 'inline-block',
+    'border-style': 'ridge',
+    'border-color': '#666666'
 }
 
 app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': '100vh'}, children=[
@@ -71,7 +80,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
             
 
             html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'justify-content': 'center', 'display': 'flex'}, children=[
-                html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+                html.Div(style=border_style, children=[
                     html.H4(
                         children='TOTAL CONFIRMED',
                         style={
@@ -91,7 +100,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 ]),
                 
 
-                html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+                html.Div(style=border_style, children=[
                     html.H4(
                         children='TOTAL DEATHS',
                         style={
@@ -110,7 +119,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                     )
                 ]),
                 
-                html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
+                html.Div(style=border_style, children=[
                     html.H4(
                         children='TOTAL RECOVERED',
                         style={
@@ -141,13 +150,13 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
 
     html.Div(style={'backgroundColor': colors['background'], 'justify-content': 'center', 'display': 'flex'}, children=[
         
-        html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'display': 'inline-block'}, children=[
+        html.Div(style=border_style, children=[
             dcc.Graph(
                 id='total-confirmed-graph'
             )
         ]),
 
-        html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'display': 'inline-block'}, children=[
+        html.Div(style=border_style, children=[
             dcc.Graph(
                 id='total-confirmed-daily'
             )
@@ -221,8 +230,8 @@ def update_graph(country):
         'data': [trace1, trace2, trace3],
         'layout': {
                 'title': "Total number of infected",
-                'paper_bgcolor': colors['background'],
-                'plot_bgcolor': colors['background'],
+                'paper_bgcolor': colors['black'],
+                'plot_bgcolor': colors['black'],
                 'font': {
                     'color': colors['text']
                 }}
@@ -231,8 +240,8 @@ def update_graph(country):
         'data': [daily],
         'layout': {
                 'title': "Number of infected daily",
-                'paper_bgcolor': colors['background'],
-                'plot_bgcolor': colors['background'],
+                'paper_bgcolor': colors['black'],
+                'plot_bgcolor': colors['black'],
                 'font': {
                     'color': colors['text']
                 }}
