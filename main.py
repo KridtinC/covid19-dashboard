@@ -29,12 +29,12 @@ colors = {
     'white': '#ffffff'
 }
 
-fig = go.Figure(data=go.Scattergeo(
+fig = go.Figure(data=go.Scattermapbox(
         lon = today_stats['Long_'],
         lat = today_stats['Lat'],
         text = today_stats['Country_Region'],
         mode = 'markers',
-        marker = dict(
+        marker = go.scattermapbox.Marker(
             color = colors['red'],
             size = today_stats['Confirmed']/scale
             )
@@ -46,6 +46,18 @@ fig = go.Figure(data=go.Scattergeo(
         font= {
                     'color': colors['text']
             }
+        )
+    )
+fig.update_layout(
+    mapbox_style="carto-darkmatter",
+    mapbox=dict(
+            bearing=0,
+            center=dict(
+                lat=25,
+                lon=0
+            ),
+            pitch=0,
+            zoom=0
         )
     )
 
