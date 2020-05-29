@@ -9,6 +9,7 @@ import datetime as dt
 
 #################Data
 
+location = pd.read_csv('covid19_location.csv')
 df = pd.read_csv('covid19_data.csv')
 df = df.set_index(df.date)
 country_options = df['Country_Region'].unique()
@@ -28,38 +29,6 @@ colors = {
     'green': '#33eb00',
     'white': '#ffffff'
 }
-
-fig = go.Figure(data=go.Scattermapbox(
-        lon = today_stats['Long_'],
-        lat = today_stats['Lat'],
-        text = today_stats['Country_Region'],
-        mode = 'markers',
-        marker = go.scattermapbox.Marker(
-            color = colors['red'],
-            size = today_stats['Confirmed']/scale
-            )
-        ),
-    layout = go.Layout(
-        title = 'Total confirmed map',
-        paper_bgcolor= colors['background'],
-        plot_bgcolor= colors['background'],
-        font= {
-                    'color': colors['text']
-            }
-        )
-    )
-fig.update_layout(
-    mapbox_style="carto-darkmatter",
-    mapbox=dict(
-            bearing=0,
-            center=dict(
-                lat=25,
-                lon=0
-            ),
-            pitch=0,
-            zoom=0
-        )
-    )
 
 app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': '100vh'}, children=[
     html.H1(
@@ -160,8 +129,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
 
         html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'display': 'inline-block'}, children=[
             dcc.Graph(
-                id='total-confirmed-map',
-                figure=fig
+                id='total-confirmed-map'
             )
         ]),
         
@@ -176,7 +144,8 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
 ])
 
 @app.callback(
-    [dash.dependencies.Output('total-confirmed-graph', 'figure'),
+    [dash.dependencies.Output('total-confirmed-map', 'figure'),
+    dash.dependencies.Output('total-confirmed-graph', 'figure'),
     dash.dependencies.Output('total_confirmed', 'children'),
     dash.dependencies.Output('total_deaths', 'children'),
     dash.dependencies.Output('total_recovered', 'children')],
@@ -184,8 +153,14 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
 def update_graph(country):
     if country == "All countries" or country == None:
         df_plot = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum()
+        loc_lat = 25
+        loc_lng = 0
+        zoom = 0
     else:
         df_plot = df[df['Country_Region'] == country][['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum()
+        loc_lat = location[location['Country_Region'] == country].drop_duplicates().reset_index()['Lat'][0]
+        loc_lng = location[location['Country_Region'] == country].drop_duplicates().reset_index()['Long_'][0]
+        zoom = 3
 
     total_confirmed = df_plot.tail(1)['Confirmed']
     total_deaths = df_plot.tail(1)['Deaths']
@@ -194,8 +169,36 @@ def update_graph(country):
     trace1 = go.Scatter(x=df_plot.index, y=df_plot['Confirmed'], name='Confirmed')
     trace2 = go.Scatter(x=df_plot.index, y=df_plot['Deaths'], name='Deaths')
     trace3 = go.Scatter(x=df_plot.index, y=df_plot['Recovered'], name='Recovered')
-
-    return {
+    fig = go.Figure(data=go.Scattermapbox(
+        lon = today_stats['Long_'],
+        lat = today_stats['Lat'],
+        text = today_stats['Country_Region'],
+        mode = 'markers',
+        marker = go.scattermapbox.Marker(
+            color = colors['red'],
+            size = today_stats['Confirmed']/scale
+            )
+        ),
+        layout = go.Layout(
+            title = 'Total confirmed map',
+            paper_bgcolor= colors['background'],
+            plot_bgcolor= colors['background'],
+            font= {
+                        'color': colors['text']
+                },
+            mapbox_style="carto-darkmatter",
+            mapbox=dict(
+                bearing=0,
+                center=dict(
+                    lat=loc_lat,
+                    lon=loc_lng
+                ),
+                pitch=0,
+                zoom=zoom
+            )
+        )
+    )
+    return fig, {
         'data': [trace1, trace2, trace3],
         'layout': {
                 'title': "Total number of infected",
