@@ -7,15 +7,9 @@ import pandas as pd
 
 #################Data
 
-country = 'Brazil'
-
 df = pd.read_csv('covid19_data.csv')
 df = df.set_index(df.date)
 country_options = df['Country_Region'].unique()
-
-total_confirmed = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Confirmed']
-total_deaths = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Deaths']
-total_recovered = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum().reset_index().tail(1)['Recovered']
 
 #################Dash
 
@@ -55,7 +49,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 value='All countries')
     ]),
 
-    html.Div(style={'backgroundColor': colors['background'], 'width': '100%', 'margin': '20px', 'justify-content': 'center', 'display': 'flex'}, children=[
+    html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'justify-content': 'center', 'display': 'flex'}, children=[
         html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
             html.H4(
                 children='TOTAL CONFIRMED',
@@ -66,7 +60,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
             ),
 
             html.H1(
-                children=total_confirmed,
+                id='total_confirmed',
                 style={
                     'textAlign': 'center',
                     'color': colors['red']
@@ -85,7 +79,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
             ),
 
             html.H1(
-                children=total_deaths,
+                id='total_deaths',
                 style={
                     'textAlign': 'center',
                     'color': colors['white']
@@ -103,7 +97,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
             ),
 
             html.H1(
-                children=total_recovered,
+                id='total_recovered',
                 style={
                     'textAlign': 'center',
                     'color': colors['green']
@@ -119,13 +113,20 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
 ])
 
 @app.callback(
-    dash.dependencies.Output('total-confirmed-graph', 'figure'),
+    [dash.dependencies.Output('total-confirmed-graph', 'figure'),
+    dash.dependencies.Output('total_confirmed', 'children'),
+    dash.dependencies.Output('total_deaths', 'children'),
+    dash.dependencies.Output('total_recovered', 'children')],
     [dash.dependencies.Input('country', 'value')])
 def update_graph(country):
     if country == "All countries" or country == None:
         df_plot = df[['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum()
     else:
         df_plot = df[df['Country_Region'] == country][['Confirmed', 'Deaths', 'Recovered']].groupby('date').sum()
+
+    total_confirmed = df_plot.tail(1)['Confirmed']
+    total_deaths = df_plot.tail(1)['Deaths']
+    total_recovered = df_plot.tail(1)['Recovered']
 
     trace1 = go.Scatter(x=df_plot.index, y=df_plot['Confirmed'], name='Confirmed')
     trace2 = go.Scatter(x=df_plot.index, y=df_plot['Deaths'], name='Deaths')
@@ -140,7 +141,7 @@ def update_graph(country):
                 'font': {
                     'color': colors['text']
                 }}
-    }
+    }, '{:,}'.format(int(total_confirmed)), '{:,}'.format(int(total_deaths)), '{:,}'.format(int(total_recovered))
 
 if __name__ == '__main__':
     app.run_server(debug=True)
