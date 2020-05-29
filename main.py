@@ -36,7 +36,8 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
         style={
             'textAlign': 'center',
             'color': colors['text'],
-            'padding': '5px'
+            'padding': '5px',
+            'font-weight': 'bold'
         }
     ),
 
@@ -81,7 +82,8 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 id='total_confirmed',
                 style={
                     'textAlign': 'center',
-                    'color': colors['red']
+                    'color': colors['red'],
+                    'font-weight': 'bold'
                 }
             )
         ]),
@@ -100,7 +102,8 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 id='total_deaths',
                 style={
                     'textAlign': 'center',
-                    'color': colors['white']
+                    'color': colors['white'],
+                    'font-weight': 'bold'
                 }
             )
         ]),
@@ -118,7 +121,8 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 id='total_recovered',
                 style={
                     'textAlign': 'center',
-                    'color': colors['green']
+                    'color': colors['green'],
+                    'font-weight': 'bold'
                 }
             )
         ]),
