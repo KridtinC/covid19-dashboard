@@ -4,12 +4,16 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
+from datetime import date, timedelta
+import datetime as dt
 
 #################Data
 
 df = pd.read_csv('covid19_data.csv')
 df = df.set_index(df.date)
 country_options = df['Country_Region'].unique()
+today_stats = df[df['date'] == (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')]
+scale = 5000
 
 #################Dash
 
@@ -25,12 +29,33 @@ colors = {
     'white': '#ffffff'
 }
 
+fig = go.Figure(data=go.Scattergeo(
+        lon = today_stats['Long_'],
+        lat = today_stats['Lat'],
+        text = today_stats['Country_Region'],
+        mode = 'markers',
+        marker = dict(
+            color = colors['red'],
+            size = today_stats['Confirmed']/scale
+            )
+        ),
+    layout = go.Layout(
+        title = 'Total confirmed map',
+        paper_bgcolor= colors['background'],
+        plot_bgcolor= colors['background'],
+        font= {
+                    'color': colors['text']
+            }
+        )
+    )
+
 app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': '100vh'}, children=[
     html.H1(
         children='COVID19 Dashboard',
         style={
             'textAlign': 'center',
-            'color': colors['text']
+            'color': colors['text'],
+            'padding': '5px'
         }
     ),
 
@@ -39,17 +64,29 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
         'color': colors['text']
     }),
 
-    html.Div(style={'backgroundColor': colors['background'], 'width': '25%', 'margin': '20px'}, children=[
-        dcc.Dropdown(
-                id="country",
-                options=[{
-                    'label': i,
-                    'value': i
-                } for i in country_options],
-                value='All countries')
+    html.Div(style={'backgroundColor': colors['background'], 'justify-content': 'center', 'display': 'flex'}, children=[
+        html.Div(style={'backgroundColor': colors['background'], 'width': '25%', 'margin': '20px'}, children=[
+            html.H6(
+                    children='Select country',
+                    style={
+                        'textAlign': 'center',
+                        'color': colors['text']
+                    }
+                ),
+
+            dcc.Dropdown(
+                    id="country",
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in country_options],
+                    value='All countries')
+        ])
     ]),
 
-    html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'justify-content': 'center', 'display': 'flex'}, children=[
+    
+
+    html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'justify-content': 'center', 'display': 'flex'}, children=[
         html.Div(style={'backgroundColor': colors['background'], 'margin': '20px', 'display': 'inline-block'}, children=[
             html.H4(
                 children='TOTAL CONFIRMED',
@@ -107,9 +144,23 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
         
     ]),
 
-    dcc.Graph(
-        id='total-confirmed-graph'
-    )
+    html.Div(style={'backgroundColor': colors['background'], 'justify-content': 'center', 'display': 'flex'}, children=[
+
+        html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'display': 'inline-block'}, children=[
+            dcc.Graph(
+                id='total-confirmed-map',
+                figure=fig
+            )
+        ]),
+        
+        html.Div(style={'backgroundColor': colors['background'], 'margin': '10px', 'display': 'inline-block'}, children=[
+            dcc.Graph(
+                id='total-confirmed-graph'
+            )
+        ])
+    ])
+
+    
 ])
 
 @app.callback(
