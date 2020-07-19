@@ -6,15 +6,59 @@ import plotly.graph_objs as go
 import pandas as pd
 from datetime import date, timedelta
 import datetime as dt
+import requests as rq
+from datetime import date, timedelta
+from io import StringIO
+import math
+import numpy as np
+import time
+import atexit
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def load_data():
+    global location, df, country_options, today_stats, scale
+    location = pd.read_csv('covid19_location.csv')
+    df = pd.read_csv('covid19_data.csv')
+    df = df.set_index(df.date)
+    country_options = df['Country_Region'].unique()
+    today_stats = df[df['date'] == (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')]
+    scale = 5000
+    print("Updated")
+
+def to_dt(date_str):
+    return dt.datetime.strptime(date_str, '%Y-%m-%d')
+
+def update_data():
+    df_from_each_file = list()
+    date_i = dt.date(2020, 1, 22)
+    while date_i != date.today():
+        res = rq.get('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' + date_i.strftime('%m-%d-%Y') + '.csv')
+        res_str = res.content.decode('utf-8')
+        res_str = res_str.replace('Province/State', 'Province_State').replace('Country/Region', 'Country_Region').replace('Last Update', 'Last_Update').replace('Latitude', 'Lat').replace('Longitude', 'Long_')
+        res_str_IO = StringIO(res_str)
+        df = pd.read_csv(res_str_IO, delimiter=',', quotechar='"')
+        df['date'] = date_i
+        df_from_each_file.append(df)
+        date_i = date_i + timedelta(days=1)
+
+    concatenated_df   = pd.concat(df_from_each_file, ignore_index=True)
+    # concatenated_df['date'] = concatenated_df.apply(lambda x: to_dt(x['date']), axis = 1)
+    concatenated_df = concatenated_df.set_index(concatenated_df.date)
+    concatenated_df.to_csv('covid19_data.csv', index=False)
+
+    load_data()
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=update_data, trigger="interval", hours=1)
+scheduler.start()
+
+atexit.register(lambda: scheduler.shutdown())
 
 #################Data
 
-location = pd.read_csv('covid19_location.csv')
-df = pd.read_csv('covid19_data.csv')
-df = df.set_index(df.date)
-country_options = df['Country_Region'].unique()
-today_stats = df[df['date'] == (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')]
-scale = 5000
+load_data()
 
 #################Dash
 
@@ -250,4 +294,4 @@ def update_graph(country):
     return fig_map, fig_graph, fig_daily, '{:,}'.format(int(total_confirmed)), '{:,}'.format(int(total_deaths)), '{:,}'.format(int(total_recovered))
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', port=80)
