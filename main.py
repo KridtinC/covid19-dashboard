@@ -96,7 +96,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background'], 'height': 
                 }
             ),
 
-            html.Div(children='For educational purpose only', style={
+            html.Div(children='For educational purpose only, see source code at https://github.com/KridtinC/covid19-dashboard', style={
                 'textAlign': 'center',
                 'color': colors['text']
             }),
