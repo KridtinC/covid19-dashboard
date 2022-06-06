@@ -13,6 +13,7 @@ import math
 import numpy as np
 import time
 import atexit
+import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -294,4 +295,5 @@ def update_graph(country):
     return fig_map, fig_graph, fig_daily, '{:,}'.format(int(total_confirmed)), '{:,}'.format(int(total_deaths)), '{:,}'.format(int(total_recovered))
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=80)
+    port = int(os.environ.get('PORT', 8000))
+    app.run_server(host='0.0.0.0', port=port)
