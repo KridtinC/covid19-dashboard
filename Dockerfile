@@ -1,11 +1,12 @@
-FROM python:3.6
+FROM python:3.9-slim
 
-WORKDIR /home/newuser/app
+WORKDIR /app
 
-ADD . /home/newuser/app
-
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
+COPY . .
+
+EXPOSE 10000
 
 CMD ["python", "main.py"]
